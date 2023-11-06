@@ -1,0 +1,12 @@
+{
+  "version": {
+    "main": 1,
+    "feature": 0,
+    "bugfix": 0,
+    "stability": "stable"
+  },
+  "deploy": {
+    "author": "",
+    "date": "21/07/2023 21:00"
+  }
+}
