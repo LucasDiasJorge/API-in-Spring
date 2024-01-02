@@ -14,8 +14,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.validation.constraints.Email;
 
+import com.project.core.utils.email.Email;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.envers.Audited;
@@ -40,7 +40,7 @@ public class UserModel extends AbstractModel {
 
     private String username;
 
-    @Email(message = "Email is not valid")
+    @Email
     @Column(unique = true)
     private String email;
 
