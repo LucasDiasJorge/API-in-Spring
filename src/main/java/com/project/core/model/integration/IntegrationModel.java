@@ -3,7 +3,7 @@ package com.project.core.model.integration;
 import com.project.core.model.AbstractModel;
 import org.hibernate.envers.Audited;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "TB_INTEGRATION_ACTION")

@@ -67,7 +67,7 @@ public class JWTConfig {
                 "/swagger-ui/**",
                 "/docs",
         };
-        http.exceptionHandling().authenticationEntryPoint(authenticationEntryPointHandler).accessDeniedHandler(appAccessDeniedHandler);
+        http.exceptionHandling(e -> e.authenticationEntryPoint(authenticationEntryPointHandler).accessDeniedHandler(appAccessDeniedHandler));
 
         http.addFilter(new JWTAuthFilter(authenticationManager(http), userRepository, userService, environment));
         http.addFilter(new JWTFilterValidator(authenticationManager(http), userRepository, environment));
@@ -75,9 +75,9 @@ public class JWTConfig {
                 .combine(corsConfigurationSource().getCorsConfiguration(r)))).csrf(csrf -> csrf.disable());
 
         http.authorizeHttpRequests(auth -> auth
-                .antMatchers(HttpMethod.POST, "/auth").permitAll()
-                .antMatchers("/core/**").permitAll()
-                .antMatchers(AUTH_WHITELIST).permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth").permitAll()
+                .requestMatchers("/core/**").permitAll()
+                .requestMatchers(AUTH_WHITELIST).permitAll()
                 .anyRequest().authenticated());
 
         http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
