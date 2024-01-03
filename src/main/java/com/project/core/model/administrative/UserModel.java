@@ -3,6 +3,7 @@ package com.project.core.model.administrative;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,7 +57,8 @@ public class UserModel extends AbstractModel {
     @JoinTable(name = "TB_USERS_ROLES",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private List<RoleModel> roles;
+    private Set<RoleModel> roles;
+
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -146,14 +148,11 @@ public class UserModel extends AbstractModel {
         this.username = username;
     }
 
-    public List<RoleModel> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<RoleModel> roles) {
+    public void setRoles(Set<RoleModel> roles) {
         this.roles = roles;
     }
 
-
-
+    public Set<RoleModel> getRoles() {
+        return roles;
+    }
 }
