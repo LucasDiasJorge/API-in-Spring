@@ -1,6 +1,8 @@
 package com.project.core.controller;
 
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -28,27 +30,25 @@ public class UserRoleController {
         this.service = service;
     }
 
-    @PutMapping("/switch/{userId}")
+    @SuppressWarnings({"unchecked"})
+    @PutMapping("/switch")
     @PreAuthorize("hasAnyRole('ROLE_ROOT','ROLE_ADMIN')")
-    public ResponseEntity<Response<Object>> switchRoles(@RequestBody Map<String,Object> role, @PathVariable Long userId, Principal user) throws AppException{
-        UserModel userModel = service.switchRole(userId, role.get("role").toString(), user);
-        return ResponseUtil.createResponse(userModel, 200, "Role switched succesfully",user);
-    }
+    public ResponseEntity<?> switchRoles(@RequestBody Object body, Principal user) throws AppException {
+        if (body instanceof HashMap) {
+            UserModel userModel = service.switchRole((Map<String, Object>) body, user);
+            return ResponseUtil.createResponse(userModel, 200, "Role switched successfully", user);
+        } else if (body instanceof List) {
+            List<UserModel> userModels = service.switchRoles((List<Map<String, Object>>) body, user);
+            return ResponseUtil.createResponse(userModels, 200, "Roles switched successfully", user);
+        }
 
-    @PutMapping("/root/switch/{userId}")
-    @PreAuthorize("hasAnyRole('ROLE_ROOT')")
-    public ResponseEntity<Response<Object>> switchRolesRoot(@RequestBody Map<String,Object> role, @PathVariable Long userId, Principal user) throws AppException{
-        UserModel userModel = service.switchRole(userId, role.get("role").toString(), user);
-        return ResponseUtil.createResponse(userModel, 200, "Role switched succesfully",user);
+        return ResponseEntity.badRequest().body("Invalid request body type");
     }
 
     @GetMapping()
+    @PreAuthorize("hasAnyRole('ROLE_ROOT','ROLE_ADMIN')")
     public ResponseEntity<?> findAll(Principal user){
         return ResponseUtil.createResponse(service.getUserInRoles(user), 200, "200 OK", user);
     }
 
-
-
-    
-    
 }
