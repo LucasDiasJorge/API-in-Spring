@@ -1,10 +1,7 @@
 package com.project.core.service.root;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -57,7 +54,7 @@ public class RootUserService extends AbstractService<UserModel> {
 
             if (!userFind.isPresent()) {
                 user.setPass(encoder.encode(user.getPass()));
-                List<RoleModel> roles = new ArrayList<>();
+                Set<RoleModel> roles = new HashSet<>();
                 roles.add(roleRepository.findRole(RoleName.ROLE_USER).get());
                 user.setRoles(roles);
                 UserModel savedUser = save(user, principal);
