@@ -1,13 +1,7 @@
 package com.project.core.controller;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.HashMap;
-
+import java.util.*;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +84,7 @@ public class CompanyController {
 
         RoleModel role = new RoleModel();
         role.setRoleName(RoleName.ROLE_ADMIN);
-        List<RoleModel> roleModelList = new ArrayList<>();
+        Set<RoleModel> roleModelList = new HashSet<>();
         roleModelList.add(role);
         companyManager.setRoles(roleModelList);
 
@@ -164,7 +158,7 @@ public class CompanyController {
         if(companyModel.isHeadquarters()){
             return ResponseUtil.createResponse(ret, 200, "200 OK",principal);
         }else{
-            throw new AppException("Empresa não é matriz", 400, null);
+            throw new AppException("Empresa não é matriz", 422, null);
         }
     }
 
