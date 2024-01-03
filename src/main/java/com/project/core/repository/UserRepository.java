@@ -17,19 +17,15 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
     public UserModel findByUsername(String username);
 
+    @Query("SELECT u FROM UserModel u WHERE u.deletedBy IS NULL AND u.company.id = :companyId AND u.username = :username")
+    public Optional<UserModel> findByUsernameAndCompanyId(@Param("username")String username, @Param("companyId") Long companyId);
+
+
     @Query("SELECT u FROM UserModel u WHERE u.id =:id AND u.deletedBy IS NULL")
     public Optional<UserModel> findByIdNotDeleted(Long id);
 
     @Query("SELECT u FROM UserModel u WHERE u.email = :email AND u.deletedBy IS NULL")
     public UserModel findByEmail(@Param("email")String email);
-
-    @Query("SELECT u FROM UserModel u WHERE u.email = :email AND u.deletedBy IS NULL")
-    public Optional<UserModel> findByEmailOpt(@Param("email")String email);
-
-    public Optional<UserModel> findByBiometryAndDeletedByIsNull(String biometry);
-
-    public Optional<UserModel> findByCardAndDeletedByIsNull(String card);
-
 
     @Query("SELECT u FROM UserModel u WHERE u.deletedBy IS NULL ORDER BY u.id DESC")
     public List<UserModel> findAllRoot(Pageable pageable);
@@ -54,4 +50,11 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
     @Query(nativeQuery = true,value = "SELECT u.id,u.username,u.email FROM tb_users_roles ur JOIN tb_user u ON ur.user_id = u.id JOIN tb_role r ON ur.role_id = r.id WHERE u.company_id = :companyId AND r.role_name = :roleName")
     Optional<List<Map<String,Object>>> findByRole(String roleName, Long companyId);
+
+    @Query("SELECT u FROM UserModel u WHERE u.email = :email AND u.deletedBy IS NULL")
+    public Optional<UserModel> findByEmailOpt(@Param("email") String email);
+
+    public Optional<UserModel> findByBiometryAndDeletedByIsNull(String biometry);
+
+    public Optional<UserModel> findByCardAndDeletedByIsNull(String card);
 }
