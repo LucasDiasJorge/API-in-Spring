@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
+import com.project.core.exception.throwable.AppException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -71,7 +72,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ROOT','ROLE_ADMIN')")
-    public ResponseEntity<Response<Object>> edit(@PathVariable Long id,@RequestBody UserModel userModel, Principal user){
+    public ResponseEntity<Response<Object>> edit(@PathVariable Long id,@RequestBody UserModel userModel, Principal user) throws AppException {
         UserModel editedUser = service.edit(id, userModel, user);
         return ResponseUtil.createResponse(editedUser, 200, "User edited with success", user);
     }
