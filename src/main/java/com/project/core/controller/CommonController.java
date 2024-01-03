@@ -3,6 +3,7 @@ package com.project.core.controller;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -92,39 +93,52 @@ public class CommonController {
         company.setBranchs(branchs);
 
         RoleModel roleRoot = new RoleModel();
-
         roleRoot.setRoleName(RoleName.ROLE_ROOT);
-
-        roleRepository.save(roleRoot);
-
-        RoleModel roleUser = new RoleModel();
-
-        roleUser.setRoleName(RoleName.ROLE_USER);
-
-        roleRepository.save(roleUser);
+        roleRoot.setPriority(RoleName.ROLE_ROOT.getPriority());
+        roleRoot = roleRepository.save(roleRoot);
 
         RoleModel roleAdmin = new RoleModel();
-
         roleAdmin.setRoleName(RoleName.ROLE_ADMIN);
+        roleAdmin.setPriority(RoleName.ROLE_ADMIN.getPriority());
+        roleAdmin = roleRepository.save(roleAdmin);
 
-        roleRepository.save(roleAdmin);
+        RoleModel roleUser = new RoleModel();
+        roleUser.setRoleName(RoleName.ROLE_USER);
+        roleUser.setPriority(RoleName.ROLE_USER.getPriority());
+        roleUser = roleRepository.save(roleUser);
 
         RoleModel rolePortal = new RoleModel();
-
         rolePortal.setRoleName(RoleName.ROLE_PORTAL);
+        rolePortal.setPriority(RoleName.ROLE_PORTAL.getPriority());
+        rolePortal = roleRepository.save(rolePortal);
 
-        roleRepository.save(rolePortal);
+        RoleModel roleManager = new RoleModel();
+        roleManager.setRoleName(RoleName.ROLE_MANAGER);
+        roleManager.setPriority(RoleName.ROLE_MANAGER.getPriority());
+        roleManager = roleRepository.save(roleManager);
 
-        List<RoleModel> roles = new ArrayList<>();
+        RoleModel roleMaintener = new RoleModel();
+        roleMaintener.setRoleName(RoleName.ROLE_MAINTENER);
+        roleMaintener.setPriority(RoleName.ROLE_MAINTENER.getPriority());
+        roleMaintener = roleRepository.save(roleMaintener);
+
+        RoleModel roleAuditor = new RoleModel();
+        roleAuditor.setRoleName(RoleName.ROLE_AUDITOR);
+        roleAuditor.setPriority(RoleName.ROLE_AUDITOR.getPriority());
+        roleAuditor = roleRepository.save(roleAuditor);
+
+        Set<RoleModel> roles = new HashSet<>();
 
         roles.add(roleRoot);
         roles.add(roleAdmin);
         roles.add(roleUser);
         roles.add(rolePortal);
+        roles.add(roleManager);
+        roles.add(roleAuditor);
 
         UserModel root = new UserModel();
 
-        root.setRoles(roles);
+        root.setRoles(roles.stream().filter(e -> e.getRoleName() == RoleName.ROLE_ROOT).collect(Collectors.toSet()));
         root.setEmail("ti@empresa.com");
         root.setPass(getPasswordEncoder().encode("senhadificil"));
         root.setActive(true);
@@ -142,7 +156,7 @@ public class CommonController {
 
         rolesAdmin.add(roleAdmin);
 
-        admin.setRoles(roles);
+        admin.setRoles(roles.stream().filter(e -> e.getRoleName() == RoleName.ROLE_ADMIN).collect(Collectors.toSet()));
         admin.setEmail("tifilial@empresa.com");
         admin.setPass(getPasswordEncoder().encode("senhadificil"));
         admin.setActive(true);
