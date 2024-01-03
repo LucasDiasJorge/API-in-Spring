@@ -1,6 +1,5 @@
 package com.project.core.model.administrative;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,9 +21,12 @@ public class RoleModel implements GrantedAuthority{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
     private RoleName roleName;
+
+    private Integer priority;
 
     public RoleModel(RoleName roleName) {
         this.roleName = roleName;
@@ -54,4 +56,18 @@ public class RoleModel implements GrantedAuthority{
     public void setRoleName(RoleName roleName) {
         this.roleName = roleName;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
+
+
 }
