@@ -1,12 +1,8 @@
 package com.project.core.service.root;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -31,39 +27,75 @@ public class RootUserRoleService extends AbstractService<UserModel> {
         this.roleRepository = roleRepository;
     }
 
-    public UserModel switchRoleRoot(Long userId, String roleName, Principal principal) throws AppException {
-        UserModel user = userRepository.findByEmail(principal.getName());
-        Optional<UserModel> userFind = userRepository.findById(userId);
+    public UserModel switchRoleRoot(Map<String, Object> body, Principal principal) throws AppException {
+        RoleModel role = new RoleModel();
+        UserModel user = getUserFromPrincipal(principal);
+        UserModel userModify = getUserById((Number) body.get("userId"));
 
-        if (!userFind.isPresent()) {
-            // Execption, user not found;
-            return null;
+        Set<RoleModel> roles = new HashSet<>();
+        roles.add(role);
+        updateUserRoles(userModify, roles, user, principal);
+
+        return updateUserInfo(userModify, principal);
+    }
+
+
+    public List<UserModel> switchRolesRoot(List<Map<String, Object>> bodies, Principal principal) throws AppException {
+        List<UserModel> updatedUsers = new ArrayList<>();
+        RoleModel role = new RoleModel();
+        UserModel user = getUserFromPrincipal(principal);
+
+        for (Map<String, Object> body : bodies) {
+            UserModel userModify = getUserById((Number) body.get("userId"));
+            Set<RoleModel> roles = new HashSet<>();
+            roles.add(role);
+            updateUserRoles(userModify, roles, user, principal);
+            updatedUsers.add(updateUserInfo(userModify, principal));
         }
 
-        UserModel userModify = userFind.get();
-
-        RoleModel role = roleRepository.findRole(RoleName.valueOf("ROLE_" + roleName.toUpperCase())).orElseThrow();
-        List<RoleModel> roles = new ArrayList<>();
-        roles.add(role);
-        userModify.getRoles().clear();
-        userModify.setRoles(roles);
-        userModify.setUpdatedBy(user.getId());
-        userModify.setLastModifiedDate(new Date());
-        return update(userId, userModify, userFind.get(), principal);
+        return updatedUsers;
     }
 
     public Object getUserInRoles(Principal principal) {
-        CompanyModel companyModel = userRepository.findByEmail(principal.getName()).getCompany();
-        List<Map<String, Object>> l = new ArrayList<>();
-        for (RoleName e : RoleName.values()) {
-            if (e.toString() != "ROLE_PORTAL") {
-                Map<String, Object> m = new LinkedHashMap<>();
-                m.put("roleName", e.toString().replace("ROLE_", ""));
-                m.put("users", userRepository.findByRole(e.toString(), companyModel.getId()).get());
-                l.add(m);
-            }
-        }
-        return l;
+        List<RoleName> allowedRolesToShow = List.of(RoleName.ROLE_USER, RoleName.ROLE_MANAGER, RoleName.ROLE_ADMIN);
+        UserModel user = getUserFromPrincipal(principal);
+        CompanyModel companyModel = user.getCompany();
+        List<RoleModel> roles = roleRepository.findAll();
+
+        return roles.stream()
+                .filter(role -> allowedRolesToShow.contains(role.getRoleName()))
+                .map(role -> createUserRoleMap(role, companyModel))
+                .collect(Collectors.toList());
+    }
+
+    public boolean isBranchInHQ(CompanyModel hq, Long branchId) {
+        return hq.getBranchs().stream().anyMatch(e -> e.getId() == branchId) || hq.getId() == branchId;
+    }
+
+    private UserModel getUserById(Number userId) throws AppException {
+        return userRepository.findById(userId.longValue())
+                .orElseThrow(() -> new AppException("User not found", 404, null));
+    }
+
+
+    private void updateUserRoles(UserModel user, Set<RoleModel> roles, UserModel updater, Principal principal)
+            throws AppException {
+        user.setRoles(new HashSet<>(roles));
+        user.setUpdatedBy(updater.getId());
+        user.setLastModifiedDate(new Date());
+        update(user.getId(), user, user, principal);
+    }
+
+    private Map<String, Object> createUserRoleMap(RoleModel role, CompanyModel companyModel) {
+        Map<String, Object> userRoleMap = new LinkedHashMap<>();
+        userRoleMap.put("id", role.getId());
+        userRoleMap.put("name", role.getRoleName().getName());
+        userRoleMap.put("users", userRepository.findByRole(role.toString(), companyModel.getId()).get());
+        return userRoleMap;
+    }
+
+    private UserModel updateUserInfo(UserModel user, Principal principal) throws AppException {
+        return update(user.getId(), user, user, principal);
     }
 
 
