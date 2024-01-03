@@ -2,8 +2,10 @@ package com.project.core.security;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
@@ -37,9 +39,11 @@ public class JWTConfig {
 
     private final Environment environment;
 
+    @Autowired
+    @Lazy(false)
     public JWTConfig(UserDetailsSeviceImpl userService, PasswordEncoder passwordEncoder, UserRepository userRepository,
-            CustomAuthenticationEntryPointHandler authenticationEntryPointHandler,
-            AppAccessDeniedHandler appAuthenticationFailedHandler, Environment environment) {
+                     CustomAuthenticationEntryPointHandler authenticationEntryPointHandler,
+                     AppAccessDeniedHandler appAuthenticationFailedHandler, Environment environment) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
@@ -50,14 +54,16 @@ public class JWTConfig {
 
     @Bean
     @Primary
+    @Lazy(false)
     AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
                 .userDetailsService(userService)
-                .passwordEncoder(passwordEncoder).and().build();
+                .passwordEncoder(passwordEncoder).and().getOrBuild();
     }
 
     @Bean
     @Primary
+    @Lazy(false)
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         String[] AUTH_WHITELIST = {
                 "/v3/**",
@@ -67,6 +73,7 @@ public class JWTConfig {
                 "/swagger-ui/**",
                 "/docs",
         };
+
         http.exceptionHandling(e -> e.authenticationEntryPoint(authenticationEntryPointHandler).accessDeniedHandler(appAccessDeniedHandler));
 
         http.addFilter(new JWTAuthFilter(authenticationManager(http), userRepository, userService, environment));
@@ -82,12 +89,13 @@ public class JWTConfig {
 
         http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        return http.build();
+        return http.getOrBuild();
 
     }
 
     @Bean
     @Primary
+    @Lazy(false)
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOriginPatterns(Arrays.asList("*"));
