@@ -84,6 +84,7 @@ public class JWTConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/auth").permitAll()
                 .requestMatchers("/core/**").permitAll()
+                .requestMatchers("/integration/**").permitAll()
                 .requestMatchers(AUTH_WHITELIST).permitAll()
                 .anyRequest().authenticated());
 
