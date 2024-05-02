@@ -4,74 +4,68 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
 public class GzipResponseWrapper extends HttpServletResponseWrapper {
 
-    private static final Logger logger = LoggerFactory.getLogger(GzipResponseWrapper.class);
 
-    private GzipServletOutputStream gzipOutputStream;
+    protected ByteArrayOutputStream baos = null;
+    protected GZIPOutputStream gzipstream = null;
+    protected boolean closed = false;
+    protected HttpServletResponse response = null;
+    protected ServletOutputStream output = null;
 
-    public GzipResponseWrapper(HttpServletResponse response, GZIPOutputStream gzipOutputStream) {
+    public GzipResponseWrapper(HttpServletResponse response) throws IOException {
         super(response);
+        closed = false;
+        this.response = response;
+        this.output = response.getOutputStream();
+        baos = new ByteArrayOutputStream();
+        gzipstream = new GZIPOutputStream(baos);
     }
 
-    @Override
-    public ServletOutputStream getOutputStream() throws IOException {
-        if (gzipOutputStream == null) {
-            logger.debug("Initializing GzipServletOutputStream");
-            gzipOutputStream = new GzipServletOutputStream(getResponse().getOutputStream());
+    public void close() throws IOException {
+        if (closed) {
+            throw new IOException("This output stream has already been closed");
         }
-        return gzipOutputStream;
+        gzipstream.finish();
+        byte[] bytes = baos.toByteArray();
+        response.addHeader("Content-Length", Integer.toString(bytes.length));
+        response.addHeader("Content-Encoding", "gzip");
+        output.write(bytes);
+        output.flush();
+        output.close();
+        closed = true;
     }
 
-    @Override
-    public void flushBuffer() throws IOException {
-        logger.debug("Flushing buffer");
-        if (gzipOutputStream != null) {
-            gzipOutputStream.finish();
+    public void flush() throws IOException {
+        if(closed) {
+            throw new IOException("Cannot flush a closed output stream");
         }
-        super.flushBuffer();
+        gzipstream.flush();
     }
 
-    private static class GzipServletOutputStream extends ServletOutputStream {
-
-        private final GZIPOutputStream gzipStream;
-
-        public GzipServletOutputStream(ServletOutputStream outputStream) throws IOException {
-            this.gzipStream = new GZIPOutputStream(outputStream);
+    public void write(int b) throws IOException {
+        if (closed) {
+            throw new IOException("Cannot write to a closed output stream");
         }
-
-        @Override
-        public void write(int b) throws IOException {
-            gzipStream.write(b);
-        }
-
-        @Override
-        public void flush() throws IOException {
-            gzipStream.flush();
-        }
-
-        public void finish() throws IOException {
-            gzipStream.finish();
-        }
-
-        @Override
-        public void close() throws IOException {
-            gzipStream.close();
-        }
-
-        @Override
-        public boolean isReady() {
-            return false;
-        }
-
-        @Override
-        public void setWriteListener(WriteListener writeListener) {
-        }
+        gzipstream.write((byte)b);
     }
+
+    public void write(byte b[]) throws IOException {
+        write(b, 0, b.length);
+    }
+
+    public void write(byte b[], int off, int len) throws IOException {
+        if (closed) {
+            throw new IOException("Cannot write to a closed output stream");
+        }
+        gzipstream.write(b, off, len);
+    }
+
+    public boolean closed() { return (this.closed); }
+
 }

@@ -22,7 +22,8 @@ public class CompressionFilter extends OncePerRequestFilter {
         if (request.getHeader("Accept-Encoding").contains("gzip")) {
             logger.debug("CompressionFilter: Gzip encoding supported");
             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(response.getOutputStream());
-            filterChain.doFilter(request, new GzipResponseWrapper(response, gzipOutputStream));
+            GzipResponseWrapper wrappedResponse = new GzipResponseWrapper(response);
+            filterChain.doFilter(request, wrappedResponse);
             gzipOutputStream.close();
         } else {
             logger.debug("CompressionFilter: Gzip encoding not supported");
