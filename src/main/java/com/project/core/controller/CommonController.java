@@ -20,6 +20,8 @@ import com.project.core.model.administrative.CompanyModel;
 import com.project.core.model.administrative.RoleModel;
 import com.project.core.model.administrative.UserModel;
 
+import com.project.core.annotation.RequestMachines;
+
 import static com.project.core.security.EncoderConfig.getPasswordEncoder;
 
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -44,6 +46,7 @@ public class CommonController {
     }
 
     @GetMapping("/ping")
+    @RequestMachines(url = "http://localhost:8777/api/v2/machine/ping")
     public Map<String,Object> ping(HttpServletRequest request) throws IOException {
 
         File info = new File("API/info.json");
