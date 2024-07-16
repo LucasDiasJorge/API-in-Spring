@@ -11,8 +11,11 @@ import jakarta.persistence.*;
 @Table(name = "TB_MIRROR")
 public class MirrorModel extends AbstractModel {
 
-    @Column(name = "details")
-    private String details;
+    @Column(name = "map_convert")
+    private String mapConvert;
+
+    @Column(name = "auth_convert")
+    private String authConvert;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
@@ -21,12 +24,20 @@ public class MirrorModel extends AbstractModel {
     public MirrorModel() {
     }
 
-    public String getDetails() {
-        return details;
+    public String getMapConvert() {
+        return mapConvert;
     }
 
-    public void setDetails(String details) {
-        this.details = details;
+    public void setMapConvert(String mapConvert) {
+        this.mapConvert = mapConvert;
+    }
+
+    public String getAuthConvert() {
+        return authConvert;
+    }
+
+    public void setAuthConvert(String authConvert) {
+        this.authConvert = authConvert;
     }
 
     public CompanyModel getCompany() {
